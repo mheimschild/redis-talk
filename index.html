@@ -6,14 +6,209 @@
             <div class="slides">
                 <section data-markdown data-separator="---">
                     <script type="text/template">
-                        ## Demo 1
-                        Slide 1
-                        ---
-                        ## Demo 1
-                        Slide 2
-                        ---
-                        ## Demo 1
-                        Slide 3
+## Redis - Short introduction
+![redis logo](./redis-logo.png)
+---
+## About me
+Milan Heimschild  
+github.com/mheimschild  
+@mheimschild
+---
+### What is Redis?
+* in memory data store
+* high performance
+* publish/subscribe
+* replication
+* no need for switch, just add it to your stack
+---
+### When to use Redis
+* performance
+* write-heavy app
+* lot of changes
+* data fits natural Redis structures
+---
+### Installation
+* Windown
+* Linux
+* OSX
+* Docker
+* Clients
+---
+### Redis clients
+* http://redis.io/clients
+* Java - Jedis/lettuce
+* Spring Data Redis
+---
+### When not to use Redis
+* You need ACID
+* Complex data structures
+---
+### Data structures
+* Strings
+* Lists
+* Sets
+* Hashes
+* Sorted Sets
+---
+### Strings
+* Strings
+* Integers
+* Floats
+* Bitmaps
+---
+### Strings - Examples
+    SET name RedisTalk
+    GET name
+    # RedisTalk
+
+    SET counter 1
+    INCR counter
+    GET counter
+    # 2
+
+    SETBIT flags 0 1
+    GETBIT flags 0
+    # 1
+---
+### Sets
+* unsorted collections of strings
+* add/remove
+* membership
+* union
+* diffs
+---
+### Sets - Examples
+    SADD products iPad Nexus
+    SMEMBERS products
+    # iPad Nexus
+    SISMEMBER products Nexus
+    # 1
+
+    SADD offers iPad Galaxy
+    SINTER offers products
+    # iPad
+
+    SUNION products offers
+    # iPad Nexus Galasy
+---
+### Sets
+* good for:
+    * collections
+    * verifying existence
+* complexity O(1)
+---
+### Sorted Sets
+* same as sets but with order
+* add/fetch/remove
+* scoring
+---
+### Sorted Sets - Examples
+---
+### Sorted Sets
+* good for:
+    * leaderboards
+    * timestamp data ranges
+    * autocomplete
+* complexity O(log(N))
+---
+### Lists
+* Linked list
+* push/pop
+* search
+* remove
+---
+### Lists - Examples
+---
+### Lists
+* good for:
+    * stacks
+    * queues
+* complexity O(1)
+* but O(n) for inserting
+---
+### Hashes
+* add
+* fetch
+* remove
+* complex structures
+---
+### Hashes - Examples
+---
+### Hashes
+* good for:
+    * representing objects
+    * storing objects
+    * storing objects references
+---
+### Publish/Subscribe
+* ! In Memory
+* Reliability
+--- 
+### Expiring Keys
+* EXPIRE
+* PERSIST
+* TTL
+---
+### Transactions
+* MULTI/EXEC
+* WATCH/MULTI/EXEC
+* Pipelines (to avoid connection roundtrips)
+---
+### Persistence
+* Snapshot
+    * BG/FG
+* AOF
+    * Rewrite
+---
+### Replication
+* Master/Slave
+* Load balance
+* Sentinels
+* Cluster
+---
+### Benchmarks
+* redis-benchmark
+---
+### Advanced examples
+---
+### Pagination (or n latest elements)
+* Long lists
+* What for?
+* Why not DB
+---
+### Solution #1
+
+    LPUSH lastcomments 1 2 3 4 5
+    LLEN lastcomments
+    # 5
+    LRANGE lastcomments 0 -1
+    # 1 2 3 4 5
+    LPUSH lastcomments 6
+
+    LPUSH lastcomments 6
+    LTRIM 0 4
+    LRANGE lastcomments 0 -1
+    # 2 3 4 5 6
+---
+### Solution #2
+
+* Pagination (or n latest)
+    - long lists? what for? Google - indexation
+    - lists or sorted sets
+* Caching
+    - SETEX
+    - NGINX redis adapter
+    - redis via unix sockets
+* Products catalog
+* Autocomplete
+* Session management
+* Leaderboard
+* Notification center
+    - PUB/SUB not reliable
+    - sorted set with X latest (timestamp as score)
+* Comments
+* Shopping cart
+
                     </script>
                 </section>
             </div>
