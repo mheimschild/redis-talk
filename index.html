@@ -4,210 +4,353 @@
     <body>
         <div class="reveal">
             <div class="slides">
-                <section data-markdown data-separator="---">
+                <section data-markdown data-separator="^\n---\n$" data-separator-vertical="^\n--\n$">
                     <script type="text/template">
 ## Redis - Short introduction
 ![redis logo](./redis-logo.png)
+
 ---
+
 ## About me
 Milan Heimschild  
 github.com/mheimschild  
 @mheimschild
+
+Note: 
+blah
+
 ---
+
 ### What is Redis?
 * in memory data store
 * high performance
 * publish/subscribe
 * replication
 * no need for switch, just add it to your stack
+
+--
+
+<pre><code class="js">var a = A;</code></pre>
+
 ---
+
 ### When to use Redis
 * performance
 * write-heavy app
 * lot of changes
 * data fits natural Redis structures
+
 ---
+
+### When not to use Redis
+* You need ACID
+* Complex data structures
+
+---
+
 ### Installation
 * Windown
 * Linux
 * OSX
 * Docker
 * Clients
+
 ---
+
 ### Redis clients
 * http://redis.io/clients
 * Java - Jedis/lettuce
 * Spring Data Redis
+
 ---
-### When not to use Redis
-* You need ACID
-* Complex data structures
----
+
 ### Data structures
 * Strings
 * Lists
 * Sets
 * Hashes
 * Sorted Sets
+
 ---
+
 ### Strings
 * Strings
 * Integers
 * Floats
 * Bitmaps
+
 ---
+
 ### Strings - Examples
-    SET name RedisTalk
-    GET name
-    # RedisTalk
+<pre><code class="bash">SET name RedisTalk
+GET name
+# RedisTalk
 
-    SET counter 1
-    INCR counter
-    GET counter
-    # 2
+SET counter 1
+INCR counter
+GET counter
+# 2
 
-    SETBIT flags 0 1
-    GETBIT flags 0
-    # 1
+SETBIT flags 0 1
+GETBIT flags 0
+# 1
+</code></pre>
+
+--
+
+<pre><code class="java">
+</code></pre>
+
 ---
+
 ### Sets
 * unsorted collections of strings
 * add/remove
 * membership
 * union
 * diffs
+
 ---
+
 ### Sets - Examples
-    SADD products iPad Nexus
-    SMEMBERS products
-    # iPad Nexus
-    SISMEMBER products Nexus
-    # 1
+<pre><code class="bash">SADD products iPad Nexus
+SMEMBERS products
+# iPad Nexus
+SISMEMBER products Nexus
+# 1
 
-    SADD offers iPad Galaxy
-    SINTER offers products
-    # iPad
+SADD offers iPad Galaxy
+SINTER offers products
+# iPad
 
-    SUNION products offers
-    # iPad Nexus Galasy
+SUNION products offers
+# iPad Nexus Galaxy</code></pre>
+
 ---
+
 ### Sets
 * good for:
     * collections
     * verifying existence
 * complexity O(1)
+
 ---
+
 ### Sorted Sets
 * same as sets but with order
 * add/fetch/remove
 * scoring
+
 ---
+
 ### Sorted Sets - Examples
+<pre><code class="bash">ZADD access:hours 1457628349333 1500
+ZADD access:hours 1457624749333 800
+ZADD access:hours 1457621149333 1200
+ZREVRANGE access:hours
+# 1500 800 1200
+
+ZREVRANGEBYSCORE access:hours 9999999999999 1457624749333
+# 1500 800
+
+ZREVRANGE access:hours 0 0
+# 1500
+</code></pre>
+
 ---
+
 ### Sorted Sets
 * good for:
     * leaderboards
     * timestamp data ranges
     * autocomplete
 * complexity O(log(N))
+
 ---
+
 ### Lists
 * Linked list
 * push/pop
 * search
 * remove
+
 ---
+
 ### Lists - Examples
+<pre><code class="bash">
+LPUSH stack 1
+LPUSH stack 2
+LPUSH stack 3
+LPOP stack
+# 3
+
+RPOP stack
+# 1
+</code></pre>
+
 ---
+
 ### Lists
 * good for:
     * stacks
     * queues
 * complexity O(1)
 * but O(n) for inserting
+
 ---
+
 ### Hashes
 * add
 * fetch
 * remove
 * complex structures
+
 ---
+
 ### Hashes - Examples
+
 ---
+
 ### Hashes
 * good for:
     * representing objects
     * storing objects
     * storing objects references
+
 ---
+
 ### Publish/Subscribe
 * ! In Memory
 * Reliability
+
 --- 
+
 ### Expiring Keys
 * EXPIRE
 * PERSIST
 * TTL
+
 ---
+
 ### Transactions
 * MULTI/EXEC
 * WATCH/MULTI/EXEC
 * Pipelines (to avoid connection roundtrips)
+
 ---
+
 ### Persistence
 * Snapshot
     * BG/FG
 * AOF
     * Rewrite
+
 ---
+
 ### Replication
 * Master/Slave
 * Load balance
 * Sentinels
 * Cluster
+
 ---
+
 ### Benchmarks
 * redis-benchmark
+
 ---
+
 ### Advanced examples
+
 ---
+
 ### Pagination (or n latest elements)
+
+![Pagination](./pagination.png)
+
 * Long lists
-* What for?
+* What for? (SCO)
 * Why not DB
+
 ---
-### Solution #1
 
-    LPUSH lastcomments 1 2 3 4 5
-    LLEN lastcomments
-    # 5
-    LRANGE lastcomments 0 -1
-    # 1 2 3 4 5
-    LPUSH lastcomments 6
+### Solution #1 - Lists
 
-    LPUSH lastcomments 6
-    LTRIM 0 4
-    LRANGE lastcomments 0 -1
-    # 2 3 4 5 6
+<pre><code class="bash">LPUSH lastcomments 1 2 3 4 5
+LLEN lastcomments
+# 5
+LRANGE lastcomments 0 -1
+# 1 2 3 4 5
+LPUSH lastcomments 6
+
+LPUSH lastcomments 6
+LTRIM 0 4
+LRANGE lastcomments 0 -1
+# 2 3 4 5 6</code></pre>
+
 ---
-### Solution #2
 
-* Pagination (or n latest)
-    - long lists? what for? Google - indexation
-    - lists or sorted sets
-* Caching
-    - SETEX
-    - NGINX redis adapter
-    - redis via unix sockets
-* Products catalog
-* Autocomplete
-* Session management
-* Leaderboard
-* Notification center
+### Solution #2 - Sorted Sets
+
+<pre><code class="bash">ZADD topcomments 10 1
+ZADD topcomments 5 2
+ZADD topcomments 15 3
+ZREVRANGE topcomments 0 -1
+# 3 1 2
+
+ZADD topcomments 7 4
+ZREMRANGEBYRANK topcomments 0 -4
+ZREVRANGE topcomments 0 -1</code></pre>
+# 3 1 4
+
+---
+
+### Caching
+* Redis vs. Memcached
+* NGINX redis adapter
+* Redis via unix sockets
+
+---
+
+### Solution
+
+    SET page42 '<div>42</div>'
+    EXPIRE page42 300
+
+    SETEX page42 300 '<div>42</div>'
+
+---
+
+### Products catalog
+
+---
+
+### Autocomplete
+
+---
+
+### Session management
+
+---
+
+### Leaderboard
+
+---
+
+### Notification center
     - PUB/SUB not reliable
     - sorted set with X latest (timestamp as score)
-* Comments
-* Shopping cart
+### Comments
+
+---
+
+### Shopping cart
+
+---
+
+### Resources
+* redis.io/commands
+* http://redis.io/clients#java
 
                     </script>
                 </section>
