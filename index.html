@@ -25,10 +25,6 @@ github.com/mheimschild
 * replication
 * no need for switch, just add it to your stack
 
---
-
-<pre><code class="js">var a = A;</code></pre>
-
 ---
 
 ### When to use Redis
@@ -50,6 +46,36 @@ github.com/mheimschild
 * Linux
 * OSX
 * Docker
+
+---
+
+### Java Project - pom.xml
+<pre><code class="xml">
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.springframework.data&lt;/groupId&gt;
+        &lt;artifactId&gt;spring-data-redis&lt;/artifactId&gt;
+        &lt;version&gt;1.6.4.RELEASE&lt;/version&gt;
+    &lt;/dependency&gt;
+
+    &lt;dependency&gt;
+        &lt;groupId&gt;redis.clients&lt;/groupId&gt;
+        &lt;artifactId&gt;jedis&lt;/artifactId&gt;
+        &lt;version&gt;2.8.0&lt;/version&gt;
+    &lt;/dependency&gt;
+</code></pre>
+
+---
+
+### Java Project - Spring context
+<pre><code class="xml">
+    &lt;bean id="connectionFactory" class="...connection.jedis.JedisConnectionFactory"&gt;
+        &lt;property name="usePool" value="true"/&gt;
+    &lt;/bean&gt;
+
+    &lt;bean id="redisTemplate" class="...redis.core.RedisTemplate"&gt;
+        &lt;property name="connectionFactory" ref="connectionFactory"/&gt;
+    &lt;/bean&gt;
+</code></pre>
 
 ---
 
@@ -244,9 +270,10 @@ HGETALL user:98765
 <pre><code class="java">
 redisTemplate.convertAndSend("chat", "Hello All!");
 
-redisConnectionFactory.getConnection().subscribe((message, bytes) -> {
-    System.out.println(valueSerializer.deserialize(message.getBody()));
-    System.out.println(stringSerializes.deserialize(message.getChannel()));
+redisConnectionFactory.getConnection()
+    .subscribe((message, bytes) -> {
+    sout(valueSerializer.deserialize(message.getBody()));
+    sout(stringSerializes.deserialize(message.getChannel()));
 }
 </code></pre>
 
@@ -256,9 +283,10 @@ redisConnectionFactory.getConnection().subscribe((message, bytes) -> {
 <pre><code class="java">
 ExecutorService exServ = Executors.newFixedThreadPool(1);
 
-exServ.submit(() -> redisConnectionFactory.getConnection().subscribe((message, bytes) -> {
-    System.out.println(valueSerializer.deserialize(message.getBody()));
-    System.out.println(stringSerializes.deserialize(message.getChannel()));
+exServ.submit(() -> redisConnectionFactory.getConnection()
+    .subscribe((message, bytes) -> {
+    sout(valueSerializer.deserialize(message.getBody()));
+    sout(stringSerializes.deserialize(message.getChannel()));
 
     redisConnectionFactory.getConnection().getSubscription().unsubscribe();
 }, "chat".getBytes()));
@@ -549,9 +577,9 @@ PSUBSCRIBE __keyspace@0__:cart* del
 ---
 
 ### Resources
-* redis.io/commands
+* http//redis.io/commands
 * http://redis.io/clients#java
-* github.com/mheimschild/redis-talk
+* http://github.com/mheimschild/redis-talk
 
                     </script>
                 </section>
