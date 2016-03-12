@@ -6,7 +6,7 @@
             <div class="slides">
                 <section data-markdown data-separator="^\n---\n$" data-separator-vertical="^\n--\n$">
                     <script type="text/template">
-## Redis - Short introduction
+## Redis - How to profit from adding it to your stack
 ![redis logo](./redis-logo.png)
 
 ---
@@ -15,9 +15,6 @@
 Milan Heimschild  
 github.com/mheimschild  
 @mheimschild
-
-Note: 
-blah
 
 ---
 
@@ -49,11 +46,10 @@ blah
 ---
 
 ### Installation
-* Windown
+* Windows
 * Linux
 * OSX
 * Docker
-* Clients
 
 ---
 
@@ -78,6 +74,7 @@ blah
 * Integers
 * Floats
 * Bitmaps
+* Atomic multiples
 
 ---
 
@@ -90,6 +87,13 @@ SET counter 1
 INCR counter
 GET counter
 # 2
+
+GETSET counter 3
+# 3
+
+SETNX counter 4
+GET counter
+# 3
 
 SETBIT flags 0 1
 GETBIT flags 0
@@ -107,8 +111,7 @@ GETBIT flags 0
 * unsorted collections of strings
 * add/remove
 * membership
-* union
-* diffs
+* union/intersection/diff
 
 ---
 
@@ -140,12 +143,14 @@ SUNION products offers
 * same as sets but with order
 * add/fetch/remove
 * scoring
+* rank
 
 ---
 
 ### Sorted Sets - Examples
 <pre><code class="bash">ZADD access:hours 1457628349333 1500
 ZADD access:hours 1457624749333 800
+# ZINCRBY access:hours 1457624749333 1
 ZADD access:hours 1457621149333 1200
 ZREVRANGE access:hours
 # 1500 800 1200
@@ -209,6 +214,16 @@ RPOP stack
 
 ### Hashes - Examples
 
+<pre><code class="bash">HMSET user:98765 name "Milan Heimschild" logins 0
+HINCRBY user:98765 logins 1
+
+HGET user:98765 logins
+# 1
+
+HGETALL user:98765
+# "name" "Milan Heimschild"
+# "logins" "1"</code></pre>
+
 ---
 
 ### Hashes
@@ -233,6 +248,23 @@ RPOP stack
 * TTL
 
 ---
+
+### Example
+
+<pre><code class="bash">SETEX myValue 1 42
+GET myValue
+# 42
+# delay
+GET myValue nil
+
+SETEX myValue 60 42
+TTL myValue
+# 59
+PERSIST myValue
+TTL myValue
+# -1
+GET myValue
+# 42</code></pre>
 
 ### Transactions
 * MULTI/EXEC
@@ -259,6 +291,14 @@ RPOP stack
 
 ### Benchmarks
 * redis-benchmark
+
+---
+
+### Security
+
+* requirepass config
+* AUTH password
+* Must be really strong
 
 ---
 
@@ -399,6 +439,7 @@ Memcached - no persistence
 ### Resources
 * redis.io/commands
 * http://redis.io/clients#java
+* github.com/mheimschild/redis-talk
 
                     </script>
                 </section>

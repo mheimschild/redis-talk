@@ -4,7 +4,7 @@ var hljs = require('highlightjs/highlight.pack.js');
 require('highlightjs/styles/railscasts.css');
 hljs.initHighlightingOnLoad();
 require('reveal.js/css/reveal.css');
-require('reveal.js/css/theme/black.css');
+require('reveal.js/css/theme/beige.css');
 //require('reveal/theme/default.css');
 
 Markdown.initialize();
