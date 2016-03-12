@@ -226,6 +226,8 @@ RPOP stack
 --- 
 
 ### Expiring Keys
+* Good for volatile keys
+* sessions/caching/quotas
 * EXPIRE
 * PERSIST
 * TTL
@@ -306,9 +308,11 @@ ZREVRANGE topcomments 0 -1</code></pre>
 ---
 
 ### Caching
+* In-memory caching
 * Redis vs. Memcached
 * NGINX redis adapter
 * Redis via unix sockets
+* can grow too fast
 
 ---
 
@@ -323,14 +327,55 @@ ZREVRANGE topcomments 0 -1</code></pre>
 
 ### Products catalog
 
+* Product attributes
+* List of products
+* Searching
+
+---
+
+### Solution
+
+<pre><code class="bash">HMSET phone:1234567 company "LG" model "Nexus" price 300
+
+HMSET phone:search "Nexus" 1234567
+
+HSCAN phone:search 0 MATCH "*Nex*" COUNT 5
+
 ---
 
 ### Autocomplete
+
+* use ElasticSearch
+* IP-to-city
+* GEO-to-city
+
+---
+
+### Solution
+
+ZADD autocomplete 0 m
+ZADD autocomplete 0 mi
+ZADD autocomplete 0 mil
+ZADD autocomplete 0 mila
+ZADD autocomplete 0 milan
+ZADD autocomplete 0 milan$
+
+ZRANK autocomplete mil
+#2
+
+ZRANGE autocomplete 3 50
+#mila milan milan$
 
 ---
 
 ### Session management
 
+* does not require stickiness
+* faster than DB
+* stabler than Memcached
+
+Note:
+Memcached - no persistence
 ---
 
 ### Leaderboard
@@ -340,6 +385,9 @@ ZREVRANGE topcomments 0 -1</code></pre>
 ### Notification center
     - PUB/SUB not reliable
     - sorted set with X latest (timestamp as score)
+
+---
+
 ### Comments
 
 ---
