@@ -238,7 +238,33 @@ HGETALL user:98765
 * ! In Memory
 * Reliability
 
---- 
+---
+
+### Example
+<pre><code class="java">
+redisTemplate.convertAndSend("chat", "Hello All!");
+
+redisConnectionFactory.getConnection().subscribe((message, bytes) -> {
+    System.out.println(valueSerializer.deserialize(message.getBody()));
+    System.out.println(stringSerializes.deserialize(message.getChannel()));
+}
+</code></pre>
+
+---
+
+### Example - fixed
+<pre><code class="java">
+ExecutorService exServ = Executors.newFixedThreadPool(1);
+
+exServ.submit(() -> redisConnectionFactory.getConnection().subscribe((message, bytes) -> {
+    System.out.println(valueSerializer.deserialize(message.getBody()));
+    System.out.println(stringSerializes.deserialize(message.getChannel()));
+
+    redisConnectionFactory.getConnection().getSubscription().unsubscribe();
+}, "chat".getBytes()));
+</code></pre>
+
+---
 
 ### Expiring Keys
 * Good for volatile keys
@@ -266,6 +292,8 @@ TTL myValue
 GET myValue
 # 42</code></pre>
 
+---
+
 ### Transactions
 * MULTI/EXEC
 * WATCH/MULTI/EXEC
@@ -275,15 +303,12 @@ GET myValue
 
 ### Persistence
 * Snapshot
-    * BG/FG
 * AOF
-    * Rewrite
 
 ---
 
 ### Replication
 * Master/Slave
-* Load balance
 * Sentinels
 * Cluster
 
@@ -342,8 +367,9 @@ ZREVRANGE topcomments 0 -1
 
 ZADD topcomments 7 4
 ZREMRANGEBYRANK topcomments 0 -4
-ZREVRANGE topcomments 0 -1</code></pre>
+ZREVRANGE topcomments 0 -1
 # 3 1 4
+</code></pre>
 
 ---
 
@@ -393,7 +419,7 @@ HSCAN phone:search 0 MATCH "*Nex*" COUNT 5
 
 ### Solution
 
-ZADD autocomplete 0 m
+<pre><code class="bash">ZADD autocomplete 0 m
 ZADD autocomplete 0 mi
 ZADD autocomplete 0 mil
 ZADD autocomplete 0 mila
@@ -401,10 +427,10 @@ ZADD autocomplete 0 milan
 ZADD autocomplete 0 milan$
 
 ZRANK autocomplete mil
-#2
+# 2
 
 ZRANGE autocomplete 3 50
-#mila milan milan$
+#mila milan milan$</code></pre>
 
 ---
 
@@ -416,23 +442,109 @@ ZRANGE autocomplete 3 50
 
 Note:
 Memcached - no persistence
+
+---
+
+### Solution
+
+<pre><code class="bash">
+HMSET session:42 username "milan" locale "de"
+EXPIRE session:42 3600
+</code></pre>
+
 ---
 
 ### Leaderboard
 
+![Leaderboard](./leaderboard.png)
+
+---
+
+## Solution
+
+<pre><code class="bash">
+ZADD points 200 Milan 300 Sigi
+ZREVRANGE points 0 -1
+# "Sigi" "Milan"
+
+ZADD stars 5 Milan 2 Sigi
+ZREVRANGE stars 0 -1
+# "Milan" "Sigi"
+
+ZUNIONSTORE leaderboard 2 points stars WEIGHTS 1 100
+ZREVRANGE leaderboard 0 -1 WITHSCORES
+# "Milan" "700"
+# "Sigi" "500"
+</code></pre>
+
 ---
 
 ### Notification center
-    - PUB/SUB not reliable
-    - sorted set with X latest (timestamp as score)
+
+* PUB/SUB not reliable
+
+![helptaxi](./helptaxi.png)
+
+---
+
+### Solution
+
+* Publish/Subscribe
+* Retrieve N latest entries
 
 ---
 
 ### Comments
 
+* Nonthreaded
+
+---
+
+### Solution
+<pre><code class="bash">
+LPUSH article:42:comments comment:12
+HMSET comment:12 author "Milan Heimschild" text "Awesome comment" timestamp "2014-05-17 23:00:34"
+
+# Deleting
+DEL comment:12
+LREM article:42:comments 0 comment:12
+
+# Listing
+LRANGE article:42:comments 0 10
+# comment:12
+HGETALL comment:12
+# author: ... text ... timestamp
+</code></pre>
+
 ---
 
 ### Shopping cart
+
+* Product catalog
+* Transactions
+* Publish/Subscribe
+* Key-Space notification
+
+---
+
+### Solution
+
+<pre><code class="bash">
+HMSET product:1 desc "iPad" price 500 count 10
+HMSET product:2 desc "Nexus" price 300 count 20
+
+MULTI
+HGET product:1 count
+# 10
+HINCRBY product:1 count -1
+# 9 
+RPUSH cart:42 product:1
+EXPIRE cart:42 600
+EXEC
+
+PSUBSCRIBE __keyspace@0__:cart* del
+
+</code></pre>
 
 ---
 

@@ -34,6 +34,8 @@ public class PublishSubscribeTest {
         exServ.submit(() -> redisConnectionFactory.getConnection().subscribe((message, bytes) -> {
             System.out.println(valueSerializer.deserialize(message.getBody()));
             System.out.println(stringSerializes.deserialize(message.getChannel()));
+
+            redisConnectionFactory.getConnection().getSubscription().unsubscribe();
         }, "chat".getBytes()));
 
         redisTemplate.convertAndSend("chat", "Hello There!");
