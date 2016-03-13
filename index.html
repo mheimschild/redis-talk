@@ -176,7 +176,7 @@ ZADD access:hours 1457621149333 1200
 ZREVRANGE access:hours
 # 1500 800 1200</code></pre>
 
-<pre class="fragment"><code class="bash">ZREVRANGEBYSCORE access:hours 9999999999999 1457624749333
+<pre class="fragment"><code class="bash">ZREVRANGEBYSCORE access:hours inf 1457624749333
 # 1500 800</code></pre>
 
 <pre class="fragment"><code class="bash">ZREVRANGE access:hours 0 0
@@ -217,6 +217,8 @@ LPOP stack
 * good for:
     * stacks
     * queues
+    * last updated
+    * sidekiq
 * complexity O(1)
 * but O(n) for inserting
 
@@ -251,6 +253,18 @@ HINCRBY user:98765 logins 1</code></pre>
     * storing objects references
 
 ---
+
+### HyperLogLogs
+
+* computes cardinality of a set
+
+---
+
+### Example
+
+<pre><code class="bash">PFADD hll user:1 user:2 user:3
+PFCOUNT hll
+# 3</code></pre>
 
 ### Publish/Subscribe
 * ! In Memory
@@ -312,8 +326,9 @@ GET myValue
 
 ### Transactions
 * MULTI/EXEC
+* DISCARD
 * WATCH/MULTI/EXEC
-* Pipelines (to avoid connection roundtrips)
+* Errors during transactions
 
 ---
 
@@ -436,10 +451,12 @@ ZREVRANGE topcomments 0 -1
 ---
 
 ### Caching
+
 * In-memory caching
 * Redis vs. Memcached
 * NGINX redis adapter
 * Redis via unix sockets
+* maxmemory options
 * can grow too fast
 
 ---
@@ -498,6 +515,8 @@ ZADD autocomplete 0 milan$</code></pre>
 
 <pre class="fragment"><code class="bash">ZRANGE autocomplete 3 50
 #mila milan milan$</code></pre>
+
+<pre class="fragment"><code class="bash">ZRANGEBYLEX autocomplete [mi (miz</code></pre>
 
 ---
 
@@ -605,6 +624,15 @@ EXPIRE cart:42 600
 EXEC</code></pre>
 
 <pre class="fragment"><code class="bash">PSUBSCRIBE __keyspace@0__:cart* del</code></pre>
+
+---
+
+### Tips and tricks
+* (hash|list|zset|set)-max-zip(map|list)-(entries|value) - factor 10
+* Pipelining - factor 5
+* Lua Scripting
+* Big Data Import (use protocol RESP)
+* Data partitioning (key based)
 
 ---
 
