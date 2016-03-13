@@ -26,6 +26,7 @@ github.com/mheimschild
 * high performance
 * publish/subscribe
 * replication
+* persistence
 * no need for switch, just add it to your stack
 
 ---
@@ -45,40 +46,10 @@ github.com/mheimschild
 ---
 
 ### Installation
-* Windows
+* Windows - Port or Cygwin
 * Linux
 * OSX
 * Docker
-
----
-
-### Java Project - pom.xml
-<pre><code class="xml">
-    &lt;dependency&gt;
-        &lt;groupId&gt;org.springframework.data&lt;/groupId&gt;
-        &lt;artifactId&gt;spring-data-redis&lt;/artifactId&gt;
-        &lt;version&gt;1.6.4.RELEASE&lt;/version&gt;
-    &lt;/dependency&gt;
-
-    &lt;dependency&gt;
-        &lt;groupId&gt;redis.clients&lt;/groupId&gt;
-        &lt;artifactId&gt;jedis&lt;/artifactId&gt;
-        &lt;version&gt;2.8.0&lt;/version&gt;
-    &lt;/dependency&gt;
-</code></pre>
-
----
-
-### Java Project - Spring context
-<pre><code class="xml">
-    &lt;bean id="connectionFactory" class="...connection.jedis.JedisConnectionFactory"&gt;
-        &lt;property name="usePool" value="true"/&gt;
-    &lt;/bean&gt;
-
-    &lt;bean id="redisTemplate" class="...redis.core.RedisTemplate"&gt;
-        &lt;property name="connectionFactory" ref="connectionFactory"/&gt;
-    &lt;/bean&gt;
-</code></pre>
 
 ---
 
@@ -86,6 +57,32 @@ github.com/mheimschild
 * http://redis.io/clients
 * Java - Jedis/lettuce
 * Spring Data Redis
+
+---
+
+### Java Project - pom.xml
+<pre><code class="xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.data&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-data-redis&lt;/artifactId&gt;
+    &lt;version&gt;1.6.4.RELEASE&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+    &lt;groupId&gt;redis.clients&lt;/groupId&gt;
+    &lt;artifactId&gt;jedis&lt;/artifactId&gt;
+    &lt;version&gt;2.8.0&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+
+---
+
+### Java Project - Spring context
+<pre><code class="xml">&lt;bean id="connectionFactory" class="...connection.jedis.JedisConnectionFactory"&gt;
+    &lt;property name="usePool" value="true"/&gt;
+&lt;/bean&gt;
+
+&lt;bean id="redisTemplate" class="...redis.core.RedisTemplate"&gt;
+    &lt;property name="connectionFactory" ref="connectionFactory"/&gt;
+&lt;/bean&gt;</code></pre>
 
 ---
 
@@ -119,7 +116,7 @@ GET counter
 # 2</code></pre>
 
 <pre class="fragment"><code class="bash">GETSET counter 3
-# 3</code></pre>
+# 2</code></pre>
 
 <pre class="fragment"><code class="bash">SETNX counter 4
 GET counter
@@ -361,7 +358,13 @@ EXEC
 
 ### Persistence
 * Snapshot
+    - manually/automatically
+    - frontend/backend
+    - 200ms/1 GB
 * AOF
+    - transaction log
+    - best in RAID
+    - system FS
 
 ---
 
@@ -382,6 +385,7 @@ EXEC
 * requirepass config
 * AUTH password
 * Must be really strong
+* Proxy
 
 ---
 
@@ -405,13 +409,14 @@ EXEC
 LLEN lastcomments
 # 5
 LRANGE lastcomments 0 -1
-# 1 2 3 4 5
-LPUSH lastcomments 6</code></pre>
+# 1 2 3 4 5</code></pre>
 
 <pre class="fragment"><code class="bash">LPUSH lastcomments 6
 LTRIM 0 4
 LRANGE lastcomments 0 -1
 # 2 3 4 5 6</code></pre>
+
+<pre class="fragment"><code class="bash">LRANGE comments 11 20</code></pre>
 
 ---
 
@@ -446,6 +451,9 @@ EXPIRE page42 300</code></pre>
 
 <pre class="fragment"><code class="bash">SETEX page42 300 '&lt;div&gt;42&lt;/div&gt;'</code></pre>
 
+<pre class="fragment"><code class="bash">SET object:1234 "some value" # wrong
+HSET object 1234 "some value" # right</code></pre>
+
 ---
 
 ### Products catalog
@@ -462,7 +470,9 @@ EXPIRE page42 300</code></pre>
 
 HMSET phone:search "Nexus" 1234567
 
-HSCAN phone:search 0 MATCH "*Nex*" COUNT 5</code></pre>
+HSCAN phone:search 0 MATCH "*Nex*" COUNT 5
+# Next 5 entries
+HSCAN phone:search 5 MATCH "*Nex*" COUNT 5</code></pre>
 
 ---
 
@@ -555,7 +565,8 @@ ZREVRANGE leaderboard 0 -1 WITHSCORES
 
 ### Solution
 <pre class="fragment"><code class="bash">LPUSH article:42:comments comment:12
-HMSET comment:12 author "Milan Heimschild" text "Awesome comment" timestamp "2014-05-17 23:00:34"</code></pre>
+HMSET comment:12 author "Milan Heimschild" text "Awesome comment" 
+timestamp "2014-05-17 23:00:34"</code></pre>
 
 <pre class="fragment"><code class="bash"># Deleting
 DEL comment:12
