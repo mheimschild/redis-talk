@@ -4,7 +4,7 @@ var hljs = require('highlightjs/highlight.pack.js');
 require('highlightjs/styles/railscasts.css');
 hljs.initHighlightingOnLoad();
 require('reveal.js/css/reveal.css');
-require('reveal.js/css/theme/beige.css');
+require('reveal.js/css/theme/white.css');
 if (window.location.search === '?print-pdf') {
   require('reveal.js/css/print/pdf.css');
 }
@@ -15,5 +15,6 @@ Reveal.initialize({
   controls: true,
   progress: true,
   history: true,
-  center: true
+  center: true,
+  transition: 'Convex',
 });
